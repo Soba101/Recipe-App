@@ -1,0 +1,12 @@
+.about {
+    text-align: center;
+  }
+  
+  .about-image {
+    margin-top: 2rem;
+  }
+  
+  .about-image img {
+    max-width: 100%;
+    border-radius: 8px;
+  }

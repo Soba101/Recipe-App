@@ -1,0 +1,12 @@
+.home {
+    text-align: center;
+  }
+  
+  .home-image {
+    margin-top: 2rem;
+  }
+  
+  .home-image img {
+    max-width: 100%;
+    border-radius: 8px;
+  }
