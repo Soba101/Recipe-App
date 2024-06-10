@@ -5,7 +5,7 @@ import './Navbar.css';
 function Navbar() {
   return (
     <nav className="navbar">
-      <h1>Recipe App</h1>
+      <h1>Recipe Bank</h1>
       <div className="links">
         <Link to="/">Home</Link>
         <Link to="/about">About</Link>
