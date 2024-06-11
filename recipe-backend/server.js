@@ -13,7 +13,10 @@ app.use(bodyParser.json());
 
 const mongoURI = process.env.MONGO_URI;
 
-mongoose.connect(mongoURI);
+mongoose.connect(mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -21,8 +24,8 @@ db.once('open', () => {
   console.log('Connected to MongoDB');
 });
 
-const recipes = require(path.join(__dirname, 'routes', 'recipes'));
-
+// Use the correct path to the routes
+const recipes = require('./routes/recipes');
 app.use('/api/recipes', recipes);
 
 app.listen(port, () => {

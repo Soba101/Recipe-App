@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const ingredientSchema = new mongoose.Schema({
   item: { type: String, required: true },
   quantity: { type: String, required: true },
-  unit: { type: String, required: true }
+  unit: { type: String }
 });
 
 const recipeSchema = new mongoose.Schema({

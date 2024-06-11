@@ -18,10 +18,8 @@ function Recipes() {
 
   const fetchRecipes = async () => {
     try {
-      const response = await axios.get('/api/recipes');
+      const response = await axios.get('http://localhost:5001/api/recipes');
       setRecipes(response.data);
-      const uniqueCuisines = [...new Set(response.data.map(recipe => recipe.cuisine))];
-      setCuisines(uniqueCuisines);
     } catch (error) {
       console.error('Error fetching recipes:', error);
     }
