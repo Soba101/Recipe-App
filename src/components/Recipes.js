@@ -89,13 +89,18 @@ function Recipes() {
   };
 
   const deleteRecipe = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this recipe?");
+    if (!confirmDelete) {
+      return; // User canceled the deletion
+    }
+  
     try {
       await axios.delete(`http://localhost:5001/api/recipes/${id}`);
-      const updatedRecipes = recipes.filter((recipe) => recipe._id !== id);
+      const updatedRecipes = recipes.filter(recipe => recipe._id !== id);
       setRecipes(updatedRecipes);
       updateCuisines(updatedRecipes);
     } catch (error) {
-      console.error("Error deleting recipe:", error);
+      console.error('Error deleting recipe:', error);
     }
   };
 
