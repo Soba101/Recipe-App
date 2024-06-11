@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 
 function Recipes() {
   const [recipes, setRecipes] = useState([]);
-  const [title, setTitle] = useState('');
-  const [cuisine, setCuisine] = useState('');
-  const [newCuisine, setNewCuisine] = useState('');
-  const [ingredients, setIngredients] = useState([{ item: '', quantity: '', unit: '' }]);
-  const [instructions, setInstructions] = useState('');
+  const [title, setTitle] = useState("");
+  const [cuisine, setCuisine] = useState("");
+  const [newCuisine, setNewCuisine] = useState("");
+  const [ingredients, setIngredients] = useState([
+    { item: "", quantity: "", unit: "" },
+  ]);
+  const [instructions, setInstructions] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [currentRecipeId, setCurrentRecipeId] = useState(null);
-  const [selectedCuisine, setSelectedCuisine] = useState('All');
-  const [cuisines, setCuisines] = useState(['Chinese', 'Western', 'Japanese']);
+  const [selectedCuisine, setSelectedCuisine] = useState("All");
+  const [cuisines, setCuisines] = useState(["Chinese", "Western", "Japanese"]);
 
   useEffect(() => {
     fetchRecipes();
@@ -19,37 +21,61 @@ function Recipes() {
 
   const fetchRecipes = async () => {
     try {
-      const response = await axios.get('http://localhost:5001/api/recipes');
+      const response = await axios.get("http://localhost:5001/api/recipes");
       setRecipes(response.data);
+      updateCuisines(response.data);
     } catch (error) {
-      console.error('Error fetching recipes:', error);
+      console.error("Error fetching recipes:", error);
     }
+  };
+
+  const updateCuisines = (recipes) => {
+    const availableCuisines = Array.from(
+      new Set(recipes.map((recipe) => recipe.cuisine))
+    );
+    availableCuisines.sort(); // Sort cuisines alphabetically
+    setCuisines(availableCuisines);
   };
 
   const addRecipe = async (e) => {
     e.preventDefault();
-    const finalCuisine = cuisine === 'new' ? newCuisine : cuisine;
-    const newRecipe = { title, cuisine: finalCuisine, ingredients, instructions };
+    const finalCuisine = cuisine === "new" ? newCuisine : cuisine;
+    const newRecipe = {
+      title,
+      cuisine: finalCuisine,
+      ingredients,
+      instructions,
+    };
     try {
       if (isEditing) {
-        const response = await axios.put(`http://localhost:5001/api/recipes/${currentRecipeId}`, newRecipe);
-        setRecipes(recipes.map(recipe => recipe._id === currentRecipeId ? response.data : recipe));
+        const response = await axios.put(
+          `http://localhost:5001/api/recipes/${currentRecipeId}`,
+          newRecipe
+        );
+        setRecipes(
+          recipes.map((recipe) =>
+            recipe._id === currentRecipeId ? response.data : recipe
+          )
+        );
         setIsEditing(false);
         setCurrentRecipeId(null);
       } else {
-        const response = await axios.post('http://localhost:5001/api/recipes', newRecipe);
+        const response = await axios.post(
+          "http://localhost:5001/api/recipes",
+          newRecipe
+        );
         setRecipes([...recipes, response.data]);
         if (!cuisines.includes(finalCuisine)) {
           setCuisines([...cuisines, finalCuisine]);
         }
       }
-      setTitle('');
-      setCuisine('');
-      setNewCuisine('');
-      setIngredients([{ item: '', quantity: '', unit: '' }]);
-      setInstructions('');
+      setTitle("");
+      setCuisine("");
+      setNewCuisine("");
+      setIngredients([{ item: "", quantity: "", unit: "" }]);
+      setInstructions("");
     } catch (error) {
-      console.error('Error adding/updating recipe:', error);
+      console.error("Error adding/updating recipe:", error);
     }
   };
 
@@ -65,9 +91,11 @@ function Recipes() {
   const deleteRecipe = async (id) => {
     try {
       await axios.delete(`http://localhost:5001/api/recipes/${id}`);
-      setRecipes(recipes.filter(recipe => recipe._id !== id));
+      const updatedRecipes = recipes.filter((recipe) => recipe._id !== id);
+      setRecipes(updatedRecipes);
+      updateCuisines(updatedRecipes);
     } catch (error) {
-      console.error('Error deleting recipe:', error);
+      console.error("Error deleting recipe:", error);
     }
   };
 
@@ -78,7 +106,7 @@ function Recipes() {
   };
 
   const addIngredientField = () => {
-    setIngredients([...ingredients, { item: '', quantity: '', unit: '' }]);
+    setIngredients([...ingredients, { item: "", quantity: "", unit: "" }]);
   };
 
   const removeIngredientField = (index) => {
@@ -87,9 +115,10 @@ function Recipes() {
     setIngredients(values);
   };
 
-  const filteredRecipes = selectedCuisine === 'All'
-    ? recipes
-    : recipes.filter((recipe) => recipe.cuisine === selectedCuisine);
+  const filteredRecipes =
+    selectedCuisine === "All"
+      ? recipes
+      : recipes.filter((recipe) => recipe.cuisine === selectedCuisine);
 
   const handleCuisineSelect = (cuisine) => {
     setSelectedCuisine(cuisine);
@@ -128,7 +157,7 @@ function Recipes() {
             ))}
             <option value="new">Add new cuisine</option>
           </select>
-          {cuisine === 'new' && (
+          {cuisine === "new" && (
             <input
               type="text"
               className="form-control mt-2"
@@ -153,7 +182,7 @@ function Recipes() {
                 required
               />
               <input
-                type="text"
+                type="number"
                 className="form-control me-2"
                 name="quantity"
                 placeholder="Quantity"
@@ -200,7 +229,7 @@ function Recipes() {
           ></textarea>
         </div>
         <button type="submit" className="btn btn-primary">
-          {isEditing ? 'Update Recipe' : 'Add Recipe'}
+          {isEditing ? "Update Recipe" : "Add Recipe"}
         </button>
       </form>
 
@@ -208,8 +237,10 @@ function Recipes() {
         <ul className="nav nav-tabs">
           <li className="nav-item">
             <button
-              className={`nav-link ${selectedCuisine === 'All' ? 'active' : ''}`}
-              onClick={() => handleCuisineSelect('All')}
+              className={`nav-link ${
+                selectedCuisine === "All" ? "active" : ""
+              }`}
+              onClick={() => handleCuisineSelect("All")}
             >
               All
             </button>
@@ -217,7 +248,9 @@ function Recipes() {
           {cuisines.map((cuisine, index) => (
             <li className="nav-item" key={index}>
               <button
-                className={`nav-link ${selectedCuisine === cuisine ? 'active' : ''}`}
+                className={`nav-link ${
+                  selectedCuisine === cuisine ? "active" : ""
+                }`}
                 onClick={() => handleCuisineSelect(cuisine)}
               >
                 {cuisine}
@@ -232,14 +265,22 @@ function Recipes() {
         {filteredRecipes.map((recipe) => (
           <li key={recipe._id} className="list-group-item">
             <h4>{recipe.title}</h4>
-            <p><strong>Cuisine:</strong> {recipe.cuisine}</p>
-            <p><strong>Ingredients:</strong></p>
+            <p>
+              <strong>Cuisine:</strong> {recipe.cuisine}
+            </p>
+            <p>
+              <strong>Ingredients:</strong>
+            </p>
             <ul>
               {recipe.ingredients.map((ingredient, i) => (
-                <li key={i}>{ingredient.quantity} {ingredient.unit} {ingredient.item}</li>
+                <li key={i}>
+                  {ingredient.quantity} {ingredient.unit} {ingredient.item}
+                </li>
               ))}
             </ul>
-            <p><strong>Instructions:</strong> {recipe.instructions}</p>
+            <p>
+              <strong>Instructions:</strong> {recipe.instructions}
+            </p>
             <button
               onClick={() => editRecipe(recipe)}
               className="btn btn-warning me-2"
