@@ -30,12 +30,12 @@ function Recipes() {
     const newRecipe = { title, cuisine, ingredients, instructions };
     try {
       if (isEditing) {
-        const response = await axios.put(`/api/recipes/${currentRecipeId}`, newRecipe);
+        const response = await axios.put(`http://localhost:5001/api/recipes/${currentRecipeId}`, newRecipe);
         setRecipes(recipes.map(recipe => recipe._id === currentRecipeId ? response.data : recipe));
         setIsEditing(false);
         setCurrentRecipeId(null);
       } else {
-        const response = await axios.post('/api/recipes', newRecipe);
+        const response = await axios.post('http://localhost:5001/api/recipes', newRecipe);
         setRecipes([...recipes, response.data]);
         if (!cuisines.includes(cuisine)) {
           setCuisines([...cuisines, cuisine]);
@@ -61,7 +61,7 @@ function Recipes() {
 
   const deleteRecipe = async (id) => {
     try {
-      await axios.delete(`/api/recipes/${id}`);
+      await axios.delete(`http://localhost:5001/api/recipes/${id}`);
       setRecipes(recipes.filter(recipe => recipe._id !== id));
     } catch (error) {
       console.error('Error deleting recipe:', error);
@@ -225,7 +225,7 @@ function Recipes() {
 
       <h3>Recipe List</h3>
       <ul className="list-group">
-        {filteredRecipes.map((recipe, index) => (
+        {filteredRecipes.map((recipe) => (
           <li key={recipe._id} className="list-group-item">
             <h4>{recipe.title}</h4>
             <p><strong>Cuisine:</strong> {recipe.cuisine}</p>

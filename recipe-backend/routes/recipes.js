@@ -54,11 +54,13 @@ router.delete('/:id', async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id);
     if (!recipe) {
+      console.log(`Recipe not found for id: ${req.params.id}`);
       return res.status(404).json({ message: 'Recipe not found' });
     }
-    await recipe.remove();
+    await Recipe.findByIdAndDelete(req.params.id);
     res.json({ message: 'Recipe deleted' });
   } catch (err) {
+    console.error(`Error deleting recipe with id: ${req.params.id}`, err);
     res.status(500).json({ message: err.message });
   }
 });
