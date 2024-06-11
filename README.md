@@ -34,7 +34,6 @@ recipe-app/
 ```
 
 Further improvements:
-- Add a database to store recipes
 - Add a way to add remarks to recipes
 - To use OCR to extract ingredients from reciepts and add them to a database of ingredients
 - Add a way to add images to recipes
@@ -62,4 +61,12 @@ Further improvements:
 - note that the above are just ideas and may not be feasible or practical
 - note that i still have google cloud credits to use for this project
 
+To do:
+- fix usenewurlparser deprecation warning
+- fix warning when running npm run build
+- improve the UI
+- improve error handling and validation
+- fix adding other cuisine types
+- image of the food
+- add remark
 
