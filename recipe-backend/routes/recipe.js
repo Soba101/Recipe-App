@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get a single recipe
+// Get a specific recipe
 router.get('/:id', async (req, res) => {
   try {
     const recipe = await Recipe.findById(req.params.id);
@@ -25,7 +25,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Create a recipe
+// Create a new recipe
 router.post('/', async (req, res) => {
   const recipe = new Recipe(req.body);
   try {
@@ -36,7 +36,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Update a recipe
+// Update an existing recipe
 router.put('/:id', async (req, res) => {
   try {
     const updatedRecipe = await Recipe.findByIdAndUpdate(req.params.id, req.body, { new: true });
