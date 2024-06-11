@@ -1,5 +1,3 @@
-Here's a more polished and detailed README file for your project:
-
 # Recipe-App
 
 A Recipe app that can house recipes for future use, built with React.js, Node.js, and MongoDB/PostgreSQL.
@@ -28,18 +26,14 @@ Recipe-App is a web application designed to store and manage recipes. It allows 
 - Lazy loading for improved performance.
 
 ## How to run the app
-
-
 	1.	Clone the repository
 	2.	Run npm install in the root directory
 	3.	Run npm start in the root directory
 	4.	Run cd recipe-backend
 	5.	Run npm install in the recipe-backend directory
 	6.	Create a .env file in the recipe-backend directory with the following contents:
-    ```
     MONGO_URI=your_mongodb_uri_here
     PORT=5001
-    ```
     7.	Run node server.js in the recipe-backend directory
 	8.	Go to http://localhost:9000/ in your browser
 
