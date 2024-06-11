@@ -5,6 +5,7 @@ function Recipes() {
   const [recipes, setRecipes] = useState([]);
   const [title, setTitle] = useState('');
   const [cuisine, setCuisine] = useState('');
+  const [newCuisine, setNewCuisine] = useState('');
   const [ingredients, setIngredients] = useState([{ item: '', quantity: '', unit: '' }]);
   const [instructions, setInstructions] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -27,7 +28,8 @@ function Recipes() {
 
   const addRecipe = async (e) => {
     e.preventDefault();
-    const newRecipe = { title, cuisine, ingredients, instructions };
+    const finalCuisine = cuisine === 'new' ? newCuisine : cuisine;
+    const newRecipe = { title, cuisine: finalCuisine, ingredients, instructions };
     try {
       if (isEditing) {
         const response = await axios.put(`http://localhost:5001/api/recipes/${currentRecipeId}`, newRecipe);
@@ -37,12 +39,13 @@ function Recipes() {
       } else {
         const response = await axios.post('http://localhost:5001/api/recipes', newRecipe);
         setRecipes([...recipes, response.data]);
-        if (!cuisines.includes(cuisine)) {
-          setCuisines([...cuisines, cuisine]);
+        if (!cuisines.includes(finalCuisine)) {
+          setCuisines([...cuisines, finalCuisine]);
         }
       }
       setTitle('');
       setCuisine('');
+      setNewCuisine('');
       setIngredients([{ item: '', quantity: '', unit: '' }]);
       setInstructions('');
     } catch (error) {
@@ -130,7 +133,8 @@ function Recipes() {
               type="text"
               className="form-control mt-2"
               placeholder="Enter new cuisine"
-              onChange={(e) => setCuisine(e.target.value)}
+              value={newCuisine}
+              onChange={(e) => setNewCuisine(e.target.value)}
               required
             />
           )}
