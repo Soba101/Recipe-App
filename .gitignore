@@ -46,3 +46,5 @@ bower_components
 # Misc
 .DS_Store
 .env
+recipes-backend/.env
+recipes-backend/.DS_Store
