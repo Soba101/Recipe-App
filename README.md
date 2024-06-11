@@ -62,7 +62,6 @@ Further improvements:
 - note that i still have google cloud credits to use for this project
 
 To do:
-- fix usenewurlparser deprecation warning
 - fix warning when running npm run build
 - improve the UI
 - improve error handling and validation
