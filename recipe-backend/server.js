@@ -1,8 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 const cors = require('cors');
-const recipes = require('./routes/recipes'); // Ensure this path is correct
+const bodyParser = require('body-parser');
+const recipesRouter = require('./routes/recipes');
+
 require('dotenv').config();
 
 const app = express();
@@ -11,19 +12,15 @@ const port = process.env.PORT || 5001;
 app.use(cors());
 app.use(bodyParser.json());
 
-const mongoURI = process.env.MONGO_URI;
-
-mongoose.connect(mongoURI, {
-}).then(() => {
-  console.log('Connected to MongoDB');
-}).catch(err => {
-  console.error('Error connecting to MongoDB', err);
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 });
-
 const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
+db.on('error', (error) => console.error(error));
+db.once('open', () => console.log('Connected to MongoDB'));
 
-app.use('/api/recipes', recipes);
+app.use('/api/recipes', recipesRouter);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
