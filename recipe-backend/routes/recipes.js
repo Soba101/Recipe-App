@@ -89,9 +89,11 @@ router.put('/:id', getRecipe, async (req, res) => {
 // Delete one recipe
 router.delete('/:id', getRecipe, async (req, res) => {
   try {
+    console.log(`Deleting recipe with id: ${req.params.id}`);
     await res.recipe.deleteOne(); // Use deleteOne instead of remove
     res.json({ message: 'Deleted Recipe' });
   } catch (err) {
+    console.error('Error deleting recipe:', err);
     res.status(500).json({ message: err.message });
   }
 });
