@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-function Recipes() {
-  const [recipes, setRecipes] = useState([]);
+const Recipes = () => {
   const [title, setTitle] = useState("");
-  const [cuisine, setCuisine] = useState("");
-  const [newCuisine, setNewCuisine] = useState("");
+  const [serves, setServes] = useState({ min: "", max: "" });
   const [ingredients, setIngredients] = useState([
     { item: "", quantity: "", unit: "" },
   ]);
-  const [instructions, setInstructions] = useState("");
+  const [method, setMethod] = useState("");
+  const [notes, setNotes] = useState("");
+  const [typeOfFood, setTypeOfFood] = useState("");
+  const [tried, setTried] = useState(false);
+  const [tested, setTested] = useState(false);
+  const [recipes, setRecipes] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [filterCourse, setFilterCourse] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [currentRecipeId, setCurrentRecipeId] = useState(null);
-  const [selectedCuisine, setSelectedCuisine] = useState("All");
-  const [cuisines, setCuisines] = useState(["Chinese", "Western", "Japanese"]);
 
   useEffect(() => {
     fetchRecipes();
@@ -23,91 +26,13 @@ function Recipes() {
     try {
       const response = await axios.get("http://localhost:5001/api/recipes");
       setRecipes(response.data);
-      updateCuisines(response.data);
+      const uniqueCourses = [
+        ...new Set(response.data.map((recipe) => recipe.typeOfFood)),
+      ].sort();
+      setCourses(uniqueCourses);
     } catch (error) {
       console.error("Error fetching recipes:", error);
     }
-  };
-
-  const updateCuisines = (recipes) => {
-    const availableCuisines = Array.from(
-      new Set(recipes.map((recipe) => recipe.cuisine))
-    );
-    availableCuisines.sort(); // Sort cuisines alphabetically
-    setCuisines(availableCuisines);
-  };
-
-  const addRecipe = async (e) => {
-    e.preventDefault();
-    const finalCuisine = cuisine === "new" ? newCuisine : cuisine;
-    const newRecipe = {
-      title,
-      cuisine: finalCuisine,
-      ingredients,
-      instructions,
-    };
-    try {
-      if (isEditing) {
-        const response = await axios.put(
-          `http://localhost:5001/api/recipes/${currentRecipeId}`,
-          newRecipe
-        );
-        setRecipes(
-          recipes.map((recipe) =>
-            recipe._id === currentRecipeId ? response.data : recipe
-          )
-        );
-        setIsEditing(false);
-        setCurrentRecipeId(null);
-      } else {
-        const response = await axios.post(
-          "http://localhost:5001/api/recipes",
-          newRecipe
-        );
-        setRecipes([...recipes, response.data]);
-        if (!cuisines.includes(finalCuisine)) {
-          setCuisines([...cuisines, finalCuisine]);
-        }
-      }
-      setTitle("");
-      setCuisine("");
-      setNewCuisine("");
-      setIngredients([{ item: "", quantity: "", unit: "" }]);
-      setInstructions("");
-    } catch (error) {
-      console.error("Error adding/updating recipe:", error);
-    }
-  };
-
-  const editRecipe = (recipe) => {
-    setTitle(recipe.title);
-    setCuisine(recipe.cuisine);
-    setIngredients(recipe.ingredients);
-    setInstructions(recipe.instructions);
-    setIsEditing(true);
-    setCurrentRecipeId(recipe._id);
-  };
-
-  const deleteRecipe = async (id) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this recipe?");
-    if (!confirmDelete) {
-      return; // User canceled the deletion
-    }
-  
-    try {
-      await axios.delete(`http://localhost:5001/api/recipes/${id}`);
-      const updatedRecipes = recipes.filter(recipe => recipe._id !== id);
-      setRecipes(updatedRecipes);
-      updateCuisines(updatedRecipes);
-    } catch (error) {
-      console.error('Error deleting recipe:', error);
-    }
-  };
-
-  const handleIngredientChange = (index, event) => {
-    const values = [...ingredients];
-    values[index][event.target.name] = event.target.value;
-    setIngredients(values);
   };
 
   const addIngredientField = () => {
@@ -115,24 +40,93 @@ function Recipes() {
   };
 
   const removeIngredientField = (index) => {
-    const values = [...ingredients];
-    values.splice(index, 1);
-    setIngredients(values);
+    const newIngredients = ingredients.filter((_, i) => i !== index);
+    setIngredients(newIngredients);
   };
 
-  const filteredRecipes =
-    selectedCuisine === "All"
-      ? recipes
-      : recipes.filter((recipe) => recipe.cuisine === selectedCuisine);
+  const handleIngredientChange = (index, event) => {
+    const newIngredients = ingredients.map((ingredient, i) => {
+      if (i === index) {
+        return { ...ingredient, [event.target.name]: event.target.value };
+      }
+      return ingredient;
+    });
+    setIngredients(newIngredients);
+  };
 
-  const handleCuisineSelect = (cuisine) => {
-    setSelectedCuisine(cuisine);
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    const recipeData = {
+      title,
+      serves: { min: Number(serves.min), max: Number(serves.max) },
+      ingredients,
+      method,
+      notes,
+      typeOfFood,
+      tried,
+      tested,
+    };
+  
+    console.log("Sending recipe data:", recipeData);
+  
+    try {
+      if (isEditing) {
+        await axios.put(`http://localhost:5001/api/recipes/${currentRecipeId}`, recipeData);
+      } else {
+        await axios.post("http://localhost:5001/api/recipes", recipeData);
+      }
+      fetchRecipes();
+      resetForm();
+    } catch (error) {
+      console.error("Error adding/updating recipe:", error);
+      if (error.response && error.response.data.errors) {
+        console.error("Validation errors:", error.response.data.errors);
+      }
+    }
+  };
+
+  const resetForm = () => {
+    setTitle("");
+    setServes({ min: "", max: "" });
+    setIngredients([{ item: "", quantity: "", unit: "" }]);
+    setMethod("");
+    setNotes("");
+    setTypeOfFood("");
+    setTried(false);
+    setTested(false);
+    setIsEditing(false);
+    setCurrentRecipeId(null);
+  };
+
+  const editRecipe = (recipe) => {
+    setTitle(recipe.title);
+    setServes(recipe.serves);
+    setIngredients(recipe.ingredients);
+    setMethod(recipe.method);
+    setNotes(recipe.notes);
+    setTypeOfFood(recipe.typeOfFood);
+    setTried(recipe.tried);
+    setTested(recipe.tested);
+    setIsEditing(true);
+    setCurrentRecipeId(recipe._id);
+  };
+
+  const deleteRecipe = async (id) => {
+    if (window.confirm("Are you sure you want to delete this recipe?")) {
+      try {
+        console.log(`Deleting recipe with id: ${id}`);
+        await axios.delete(`http://localhost:5001/api/recipes/${id}`);
+        setRecipes(recipes.filter(recipe => recipe._id !== id));
+      } catch (error) {
+        console.error('Error deleting recipe:', error);
+      }
+    }
   };
 
   return (
     <div className="recipes container">
       <h2>Recipes</h2>
-      <form onSubmit={addRecipe} className="mb-4">
+      <form onSubmit={handleFormSubmit} className="mb-4">
         <div className="form-group mb-3">
           <label htmlFor="title">Title:</label>
           <input
@@ -146,32 +140,23 @@ function Recipes() {
           />
         </div>
         <div className="form-group mb-3">
-          <label htmlFor="cuisine">Cuisine:</label>
-          <select
+          <label htmlFor="serves">Serves:</label>
+          <input
+            type="number"
             className="form-control"
-            id="cuisine"
-            value={cuisine}
-            onChange={(e) => setCuisine(e.target.value)}
-            required
-          >
-            <option value="">Select cuisine</option>
-            {cuisines.map((cuisine, index) => (
-              <option key={index} value={cuisine}>
-                {cuisine}
-              </option>
-            ))}
-            <option value="new">Add new cuisine</option>
-          </select>
-          {cuisine === "new" && (
-            <input
-              type="text"
-              className="form-control mt-2"
-              placeholder="Enter new cuisine"
-              value={newCuisine}
-              onChange={(e) => setNewCuisine(e.target.value)}
-              required
-            />
-          )}
+            id="servesMin"
+            value={serves.min}
+            onChange={(e) => setServes({ ...serves, min: e.target.value })}
+            placeholder="Min"
+          />
+          <input
+            type="number"
+            className="form-control"
+            id="servesMax"
+            value={serves.max}
+            onChange={(e) => setServes({ ...serves, max: e.target.value })}
+            placeholder="Max"
+          />
         </div>
         <div className="form-group mb-3">
           <label>Ingredients:</label>
@@ -223,86 +208,131 @@ function Recipes() {
           </button>
         </div>
         <div className="form-group mb-3">
-          <label htmlFor="instructions">Instructions:</label>
+          <label htmlFor="method">Instructions:</label>
           <textarea
             className="form-control"
-            id="instructions"
-            value={instructions}
-            onChange={(e) => setInstructions(e.target.value)}
+            id="method"
+            value={method}
+            onChange={(e) => setMethod(e.target.value)}
             placeholder="Describe the instructions"
             required
           ></textarea>
+        </div>
+        <div className="form-group mb-3">
+          <label htmlFor="notes">Notes:</label>
+          <textarea
+            className="form-control"
+            id="notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Add any notes (optional)"
+          ></textarea>
+        </div>
+        <div className="form-group mb-3">
+          <label htmlFor="typeOfFood">Type of Food:</label>
+          <input
+            type="text"
+            className="form-control"
+            id="typeOfFood"
+            value={typeOfFood}
+            onChange={(e) => setTypeOfFood(e.target.value)}
+            placeholder="Enter type of food"
+          />
+        </div>
+        <div className="form-group mb-3">
+          <label htmlFor="tried">Tried:</label>
+          <input
+            type="checkbox"
+            className="form-check-input"
+            id="tried"
+            checked={tried}
+            onChange={(e) => setTried(e.target.checked)}
+          />
+        </div>
+        <div className="form-group mb-3">
+          <label htmlFor="tested">Tested:</label>
+          <input
+            type="checkbox"
+            className="form-check-input"
+            id="tested"
+            checked={tested}
+            onChange={(e) => setTested(e.target.checked)}
+          />
         </div>
         <button type="submit" className="btn btn-primary">
           {isEditing ? "Update Recipe" : "Add Recipe"}
         </button>
       </form>
-
-      <div className="mb-4">
-        <ul className="nav nav-tabs">
-          <li className="nav-item">
-            <button
-              className={`nav-link ${
-                selectedCuisine === "All" ? "active" : ""
-              }`}
-              onClick={() => handleCuisineSelect("All")}
-            >
-              All
-            </button>
-          </li>
-          {cuisines.map((cuisine, index) => (
-            <li className="nav-item" key={index}>
+      <div className="form-group mb-4">
+        <label htmlFor="filterCourse">Filter by Type of Food:</label>
+        <select
+          className="form-control"
+          id="filterCourse"
+          onChange={(e) => setFilterCourse(e.target.value)}
+        >
+          <option value="">All</option>
+          {courses.map((course) => (
+            <option key={course} value={course}>
+              {course}
+            </option>
+          ))}
+        </select>
+      </div>
+      <h3>Recipe List</h3>
+      <ul className="list-group">
+        {recipes
+          .filter(
+            (recipe) => !filterCourse || recipe.typeOfFood === filterCourse
+          )
+          .map((recipe, index) => (
+            <li key={index} className="list-group-item">
+              <h4>{recipe.title}</h4>
+              <p>
+                <strong>Serves:</strong> {recipe.serves.min} -{" "}
+                {recipe.serves.max}
+              </p>
+              <p>
+                <strong>Type of Food:</strong> {recipe.typeOfFood}
+              </p>
+              <p>
+                <strong>Ingredients:</strong>
+              </p>
+              <ul>
+                {recipe.ingredients.map((ingredient, i) => (
+                  <li key={i}>
+                    {ingredient.quantity} {ingredient.unit} {ingredient.item}
+                  </li>
+                ))}
+              </ul>
+              <p>
+                <strong>Instructions:</strong> {recipe.method}
+              </p>
+              <p>
+                <strong>Notes:</strong> {recipe.notes}
+              </p>
+              <p>
+                <strong>Tried:</strong> {recipe.tried ? "Yes" : "No"}
+              </p>
+              <p>
+                <strong>Tested:</strong> {recipe.tested ? "Yes" : "No"}
+              </p>
               <button
-                className={`nav-link ${
-                  selectedCuisine === cuisine ? "active" : ""
-                }`}
-                onClick={() => handleCuisineSelect(cuisine)}
+                onClick={() => editRecipe(recipe)}
+                className="btn btn-warning me-2"
               >
-                {cuisine}
+                Edit
+              </button>
+              <button
+                onClick={() => deleteRecipe(recipe._id)}
+                className="btn btn-danger"
+              >
+                Delete
               </button>
             </li>
           ))}
-        </ul>
-      </div>
-
-      <h3>Recipe List</h3>
-      <ul className="list-group">
-        {filteredRecipes.map((recipe) => (
-          <li key={recipe._id} className="list-group-item">
-            <h4>{recipe.title}</h4>
-            <p>
-              <strong>Cuisine:</strong> {recipe.cuisine}
-            </p>
-            <p>
-              <strong>Ingredients:</strong>
-            </p>
-            <ul>
-              {recipe.ingredients.map((ingredient, i) => (
-                <li key={i}>
-                  {ingredient.quantity} {ingredient.unit} {ingredient.item}
-                </li>
-              ))}
-            </ul>
-            <p>
-              <strong>Instructions:</strong> {recipe.instructions}
-            </p>
-            <button
-              onClick={() => editRecipe(recipe)}
-              className="btn btn-warning me-2"
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => deleteRecipe(recipe._id)}
-              className="btn btn-danger"
-            >
-              Delete
-            </button>
-          </li>
-        ))}
       </ul>
     </div>
   );
-}
+};
 
 export default Recipes;
