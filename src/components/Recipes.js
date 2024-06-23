@@ -66,7 +66,9 @@ const Recipes = () => {
       tried,
       tested,
     };
-
+  
+    console.log("Sending recipe data:", recipeData);
+  
     try {
       if (isEditing) {
         await axios.put(`http://localhost:5001/api/recipes/${currentRecipeId}`, recipeData);
@@ -77,6 +79,9 @@ const Recipes = () => {
       resetForm();
     } catch (error) {
       console.error("Error adding/updating recipe:", error);
+      if (error.response && error.response.data.errors) {
+        console.error("Validation errors:", error.response.data.errors);
+      }
     }
   };
 

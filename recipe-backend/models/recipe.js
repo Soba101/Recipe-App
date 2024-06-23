@@ -7,7 +7,7 @@ const ingredientSchema = new mongoose.Schema({
 });
 
 const recipeSchema = new mongoose.Schema({
-  title: { type: String, required: true },
+  title: { type: String, required: true, index: true }, // Add index here
   serves: {
     min: { type: Number, required: true },
     max: { type: Number, required: true }
